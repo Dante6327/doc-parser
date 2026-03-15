@@ -17,6 +17,7 @@ MPS 가속: Apple Silicon (M1/M2/M3/M4) 자동 감지
 import asyncio
 import io
 import os
+import re
 import shutil
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
@@ -241,6 +242,29 @@ class DocumentParserService:
             )
 
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 콘텐츠 필터링
+# ─────────────────────────────────────────────────────────────────────────────
+_MEANINGLESS_PATTERN = re.compile(r'^[\s\W_]+$')
+_MIN_CONTENT_LENGTH = 2
+
+
+def _is_meaningful(text: str) -> bool:
+    cleaned = text.strip()
+    if len(cleaned) < _MIN_CONTENT_LENGTH:
+        return False
+    if _MEANINGLESS_PATTERN.match(cleaned):
+        return False
+    return True
+
+
+def _clean_content(text: str) -> str:
+    text = re.sub(r' {2,}', ' ', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 순수 함수 헬퍼
 # ─────────────────────────────────────────────────────────────────────────────
@@ -256,11 +280,11 @@ def _extract_page_number(item) -> int | None:
 def _handle_table(item, page_no: int | None) -> DocumentElement | None:
     try:
         md = item.export_to_markdown()
-        if md.strip():
+        if _is_meaningful(md):
             return DocumentElement(
                 page_number=page_no,
                 type=ElementType.TABLE,
-                content=md,
+                content=_clean_content(md),
             )
     except Exception:
         pass
@@ -269,10 +293,10 @@ def _handle_table(item, page_no: int | None) -> DocumentElement | None:
 
 def _handle_text(item, page_no: int | None) -> DocumentElement | None:
     text = getattr(item, "text", "").strip()
-    if text:
+    if _is_meaningful(text):
         return DocumentElement(
             page_number=page_no,
             type=ElementType.TEXT,
-            content=text,
+            content=_clean_content(text),
         )
     return None
