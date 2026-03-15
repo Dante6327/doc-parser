@@ -36,6 +36,3 @@ dev = [
 # (torch nightly MPS 빌드가 필요한 경우 아래 주석 해제)
 # index-url = "https://download.pytorch.org/whl/cpu"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
