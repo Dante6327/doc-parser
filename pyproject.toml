@@ -1,0 +1,41 @@
+[project]
+name = "doc-parser"
+version = "0.1.0"
+description = "Docling + Gemini/Ollama 기반 문서 분석 마이크로서비스"
+requires-python = ">=3.11"
+dependencies = [
+    # Web Framework
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",   # UploadFile 지원
+
+    # Document Parsing
+    "docling>=2.5.0",
+
+    # LLM Providers
+    "google-generativeai>=0.7.0",
+    "ollama>=0.3.0",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "pillow>=10.0.0",             # 이미지 처리
+    "xlrd>=2.0.1",               # .xls → .xlsx 변환용
+    "openpyxl>=3.1.0",           # .xls 변환 후 저장용
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27.0",    # 테스트용 클라이언트
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[tool.uv]
+# Apple Silicon MPS 지원을 위해 torch는 기본 pip 인덱스에서 설치
+# (torch nightly MPS 빌드가 필요한 경우 아래 주석 해제)
+# index-url = "https://download.pytorch.org/whl/cpu"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
